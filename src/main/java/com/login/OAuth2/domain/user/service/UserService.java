@@ -32,12 +32,20 @@ public class UserService {
                 .email(userSignUpDto.getEmail())
                 .password(userSignUpDto.getPassword())
                 .nickname(userSignUpDto.getNickname())
-                .age(userSignUpDto.getAge())
-                .city(userSignUpDto.getCity())
                 .role(Role.USER)
                 .build();
 
+        //pwd를 먼저 빌드하고 후에 유저의 passwordEncode 메서드로 pwd를 암호화한다.
         user.passwordEncode(passwordEncoder);
         userRepository.save(user);
     }
+
+//    public void updateRefreshToken(String email, String refreshToken) {
+//        System.out.println(">> UserService.updateRefreshToken() 실행 - jwt 리토 유저 DB에 저장");
+//        userRepository.findByEmail(email)
+//                .ifPresentOrElse(
+//                        user -> user.updateRefreshToken(refreshToken),
+//                        () -> new Exception("일치하는 회원이 없습니다.")
+//                );
+//    }
 }

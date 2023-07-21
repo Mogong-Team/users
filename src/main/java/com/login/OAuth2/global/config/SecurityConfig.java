@@ -1,6 +1,7 @@
 package com.login.OAuth2.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.login.OAuth2.domain.user.Role;
 import com.login.OAuth2.domain.user.repository.UserRepository;
 import com.login.OAuth2.global.jwt.filter.JwtAuthenticationProcessingFilter;
 import com.login.OAuth2.global.jwt.service.JwtService;
@@ -44,10 +45,11 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        System.out.println(">> SecurityConfig.SecurityFilterChain() 실행");
         http
                 .formLogin().disable() // FormLogin 사용 X
-                .httpBasic().disable() // httpBasic 사용 X
-                .csrf().disable() // csrf 보안 사용 X
+                .httpBasic().disable()
+                .csrf().disable()
                 .headers().frameOptions().disable()
                 .and()
 
@@ -58,11 +60,9 @@ public class SecurityConfig {
 
                 //== URL별 권한 관리 옵션 ==//
                 .authorizeRequests()
-
-                // 아이콘, css, js 관련
-                // 기본 페이지, css, image, js 하위 폴더에 있는 자료들은 모두 접근 가능, h2-console에 접근 가능
                 .antMatchers("/","/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**").permitAll()
                 .antMatchers("/sign-up").permitAll() // 회원가입 접근 가능
+                .antMatchers("/oauth2/sign-up").permitAll()
                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
                 .and()
                 //== 소셜 로그인 설정 ==//
@@ -82,6 +82,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        System.out.println(">> SecurityConfig.passwordEncoder() 실행");
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
@@ -95,6 +96,7 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
+        System.out.println(">> SecurityConfig.authenticationManager() 실행");
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         provider.setUserDetailsService(loginService);
@@ -106,6 +108,7 @@ public class SecurityConfig {
      */
     @Bean
     public LoginSuccessHandler loginSuccessHandler() {
+        System.out.println(">> SecurityConfig.LoginSuccessHandler() 실행");
         return new LoginSuccessHandler(jwtService, userRepository);
     }
 

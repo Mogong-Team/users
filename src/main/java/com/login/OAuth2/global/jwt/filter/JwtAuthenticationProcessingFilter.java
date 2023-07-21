@@ -6,6 +6,7 @@ import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.jwt.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -19,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Jwt 인증 필터
@@ -38,6 +40,7 @@ import java.io.IOException;
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private static final String NO_CHECK_URL = "/login"; // "/login"으로 들어오는 요청은 Filter 작동 X
+    private static final String OAUTH_SIGNUP_URL = "/oauth2/sign-up";
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -46,114 +49,108 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        System.out.println("\n>> JwtAuthenticationProcessingFilter.doFilterInternal() 실행 - 인증 처리/인증 실패/토큰 재발급 로직 수행");
+        System.out.println(">> > request : " + request.getRequestURI());
+
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
+            System.out.println(">> >> URL check - /login 요청인가??");
             filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
             return; // return으로 이후 현재 필터 진행 막기 (안해주면 아래로 내려가서 계속 필터 진행시킴)
+        } else if(request.getRequestURI().equals(OAUTH_SIGNUP_URL)){
+            System.out.println(">> >> URL check - /oauth2/sign-up 요청인가??");
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        // 사용자 요청 헤더에서 RefreshToken 추출
-        // -> RefreshToken이 없거나 유효하지 않다면(DB에 저장된 RefreshToken과 다르다면) null을 반환
-        // 사용자의 요청 헤더에 RefreshToken이 있는 경우는, AccessToken이 만료되어 요청한 경우밖에 없다.
-        // 따라서, 위의 경우를 제외하면 추출한 refreshToken은 모두 null
-        String refreshToken = jwtService.extractRefreshToken(request)
-                .filter(jwtService::isTokenValid)
-                .orElse(null);
 
-        // 리프레시 토큰이 요청 헤더에 존재했다면, 사용자가 AccessToken이 만료되어서
-        // RefreshToken까지 보낸 것이므로 리프레시 토큰이 DB의 리프레시 토큰과 일치하는지 판단 후,
-        // 일치한다면 AccessToken을 재발급해준다.
-        if (refreshToken != null) {
-            checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
+        System.out.println(">> >> 요청 헤더에서 refreshToken 추출 - /login 요청이 아니기 때문에");
+        String refreshToken = jwtService.extractRefreshToken(request)   //토큰 헤더에서 refreshToken추출
+                .filter(jwtService::isTokenValid)   //유효성을 검사
+                .orElse(null);  //유효하지 않으면 null 반환
+
+        if (refreshToken != null) { //헤더에 리토가 있으면
+            System.out.println(">> >> >> refreshToken이 null이 아니다");
+            checkRefreshTokenAndReIssueAccessToken(response, refreshToken); //메서드 실행
             return; // RefreshToken을 보낸 경우에는 AccessToken을 재발급 하고 인증 처리는 하지 않게 하기위해 바로 return으로 필터 진행 막기
         }
 
-        // RefreshToken이 없거나 유효하지 않다면, AccessToken을 검사하고 인증을 처리하는 로직 수행
-        // AccessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
-        // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터로 넘어가기 때문에 인증 성공
-        if (refreshToken == null) {
-            checkAccessTokenAndAuthentication(request, response, filterChain);
+        if (refreshToken == null) { //헤더에 리토가 없으면
+            System.out.println(">> >> >> refreshToken이 null이다 - AccessToken을 검사해야 한다");
+            checkAccessTokenAndAuthentication(request, response, filterChain);  //액토가 유효한지를 판단함
         }
     }
 
     /**
      *  [리프레시 토큰으로 유저 정보 찾기 & 액세스 토큰/리프레시 토큰 재발급 메소드]
-     *  파라미터로 들어온 헤더에서 추출한 리프레시 토큰으로 DB에서 유저를 찾고, 해당 유저가 있다면
-     *  JwtService.createAccessToken()으로 AccessToken 생성,
-     *  reIssueRefreshToken()로 리프레시 토큰 재발급 & DB에 리프레시 토큰 업데이트 메소드 호출
-     *  그 후 JwtService.sendAccessTokenAndRefreshToken()으로 응답 헤더에 보내기
      */
-    public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-        userRepository.findByRefreshToken(refreshToken)
-                .ifPresent(user -> {
-                    String reIssuedRefreshToken = reIssueRefreshToken(user);
-                    jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()),
-                            reIssuedRefreshToken);
+    public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) { //헤더에 리토가 이씅면 실행됨
+        System.out.println(">> JwtAuthenticationProcessingFilter.checkRefreshTokenAndReIssueAccessToken() 실행 - 헤더에 리토가 있기 때문에 실행된다.");
+        userRepository.findByRefreshToken(refreshToken) //헤더에서 추출한 리토로 DB에서 유저를 일단 찾음
+                .ifPresent(user -> {    //해당 유저가 있으면
+                    String reIssuedRefreshToken = reIssueRefreshToken(user);    //유저에 대한 리토를 재발급해주고 리토 DB에 새로 저장
+                    jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()), reIssuedRefreshToken);
+                    //유저에 대한 액토를 재발급하고 sendAccessAndRefreshToken 메서드를 호출해 재발급한 액토, 리토를 response에 보낸다. (헤더에 붙인다)
                 });
     }
 
     /**
      * [리프레시 토큰 재발급 & DB에 리프레시 토큰 업데이트 메소드]
-     * jwtService.createRefreshToken()으로 리프레시 토큰 재발급 후
-     * DB에 재발급한 리프레시 토큰 업데이트 후 Flush
      */
     private String reIssueRefreshToken(User user) {
-        String reIssuedRefreshToken = jwtService.createRefreshToken();
-        user.updateRefreshToken(reIssuedRefreshToken);
-        userRepository.saveAndFlush(user);
+        String reIssuedRefreshToken = jwtService.createRefreshToken();  //리토 재발급
+        user.updateRefreshToken(reIssuedRefreshToken);  //유저 리토 필드 update
+        userRepository.saveAndFlush(user);  //DB에 저장
         return reIssuedRefreshToken;
     }
 
     /**
      * [액세스 토큰 체크 & 인증 처리 메소드]
-     * request에서 extractAccessToken()으로 액세스 토큰 추출 후, isTokenValid()로 유효한 토큰인지 검증
-     * 유효한 토큰이면, 액세스 토큰에서 extractEmail로 Email을 추출한 후 findByEmail()로 해당 이메일을 사용하는 유저 객체 반환
-     * 그 유저 객체를 saveAuthentication()으로 인증 처리하여
-     * 인증 허가 처리된 객체를 SecurityContextHolder에 담기
-     * 그 후 다음 인증 필터로 진행
      */
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                                  FilterChain filterChain) throws ServletException, IOException {
+                                                  FilterChain filterChain) throws ServletException, IOException {   //액토 체크, 인증
         log.info("checkAccessTokenAndAuthentication() 호출");
-        jwtService.extractAccessToken(request)
-                .filter(jwtService::isTokenValid)
-                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
-                        .ifPresent(email -> userRepository.findByEmail(email)
-                                .ifPresent(this::saveAuthentication)));
+        System.out.println(">> JwtAuthenticationProcessingFilter.checkAccessTokenAndAuthentication() 호출");
 
-        filterChain.doFilter(request, response);
+        Optional<String> accessToken = jwtService.extractAccessToken(request);
+        if (accessToken.isPresent() && jwtService.isTokenValid(accessToken.get())) {
+            Optional<String> email = jwtService.extractEmail(accessToken.get());
+            if (email.isPresent()) {
+                userRepository.findByEmail(email.get()).ifPresent(this::saveAuthentication);
+            }
+        }
+//        jwtService.extractAccessToken(request)  //요청 헤더에서 액토 추출
+//                .filter(jwtService::isTokenValid)   //액토 유효성 검사
+//                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)  //요청 헤더에서 유저 이메일 추출 후
+//                        .ifPresent(email -> userRepository.findByEmail(email)   //이메일로 해당 유저 찾음
+//                                .ifPresent(this::saveAuthentication))); //saveAuthentication() 파라미터로 유저를 넘겨
+
+        filterChain.doFilter(request, response);    //해당 유저의 인증 처리를 한다.
     }
 
     /**
      * [인증 허가 메소드]
-     * 파라미터의 유저 : 우리가 만든 회원 객체 / 빌더의 유저 : UserDetails의 User 객체
-     *
-     * new UsernamePasswordAuthenticationToken()로 인증 객체인 Authentication 객체 생성
-     * UsernamePasswordAuthenticationToken의 파라미터
-     * 1. 위에서 만든 UserDetailsUser 객체 (유저 정보)
-     * 2. credential(보통 비밀번호로, 인증 시에는 보통 null로 제거)
-     * 3. Collection < ? extends GrantedAuthority>로,
-     * UserDetails의 User 객체 안에 Set<GrantedAuthority> authorities이 있어서 getter로 호출한 후에,
-     * new NullAuthoritiesMapper()로 GrantedAuthoritiesMapper 객체를 생성하고 mapAuthorities()에 담기
-     *
-     * SecurityContextHolder.getContext()로 SecurityContext를 꺼낸 후,
-     * setAuthentication()을 이용하여 위에서 만든 Authentication 객체에 대한 인증 허가 처리
      */
     public void saveAuthentication(User myUser) {
-        String password = myUser.getPassword();
+        System.out.println(">> JwtAuthenticationProcessingFilter.saveAuthentication() 호출");
+        System.out.println(">> >> myUser : " + myUser);
+        String password = myUser.getPassword(); //파라미터로 들어온 유저의 password
         if (password == null) { // 소셜 로그인 유저의 비밀번호 임의로 설정 하여 소셜 로그인 유저도 인증 되도록 설정
-            password = PasswordUtil.generateRandomPassword();
+            password = PasswordUtil.generateRandomPassword();   //소셜 로그인으로 하여 password가 없으면 임의로 생성 시켜놓는다
         }
 
-        UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-                .username(myUser.getEmail())
-                .password(password)
-                .roles(myUser.getRole().name())
+        UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()  //사용자 인증 정보 생성
+                .username(myUser.getEmail())    //유저이름은 사용자 이메일
+                .password(password) //password는 위에서 설정한 password
+                .roles(myUser.getRole().name()) //role은
                 .build();
 
-        Authentication authentication =
+        Authentication authentication = // 인증 정보를 생성한다.
                 new UsernamePasswordAuthenticationToken(userDetailsUser, null,
                         authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
 
+        /*
+        * 해당 유저의 객체를 SecurityContextHolder에 담아 인증 처리를 진행함.
+        * */
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

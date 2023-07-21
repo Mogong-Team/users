@@ -16,7 +16,8 @@ public class LoginService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        System.out.println(">> LoginService.loadUserByUsername() 호출");
+        User user = userRepository.findByEmail(email)   //DaoAuthenticationProvider가 설정한 email을 가진 유저를 찾음
                 .orElseThrow(() -> new UsernameNotFoundException("해당 이메일이 존재하지 않습니다."));
 
         return org.springframework.security.core.userdetails.User.builder()

@@ -32,9 +32,10 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_REQUEST_MATCHER =
             new AntPathRequestMatcher(DEFAULT_LOGIN_REQUEST_URL, HTTP_METHOD); // "/login" + POST로 온 요청에 매칭된다.
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;    //ObjectMapper: JSON 직력화와 역직렬화를 처리하는 라이브러리 객체
 
     public CustomJsonUsernamePasswordAuthenticationFilter(ObjectMapper objectMapper) {
+        // super()를 통해 부모 클래스 AbstractAuthenticationProcessingFilter()의 생성자 파라미터 설정
         super(DEFAULT_LOGIN_PATH_REQUEST_MATCHER); // 위에서 설정한 "login" + POST로 온 요청을 처리하기 위해 설정
         this.objectMapper = objectMapper;
     }
@@ -59,18 +60,19 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException {
-        if(request.getContentType() == null || !request.getContentType().equals(CONTENT_TYPE)  ) {
-            throw new AuthenticationServiceException("Authentication Content-Type not supported: " + request.getContentType());
+        if(request.getContentType() == null || !request.getContentType().equals(CONTENT_TYPE)  ) {  //요청의 ContentType이 null이거나 application/json이 아니면
+            throw new AuthenticationServiceException("Authentication Content-Type not supported: " + request.getContentType()); //예외를 발생시켜 JSON으로 요청하도록 함
         }
 
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
 
-        Map<String, String> usernamePasswordMap = objectMapper.readValue(messageBody, Map.class);
+        Map<String, String> usernamePasswordMap = objectMapper.readValue(messageBody, Map.class);   //메세지 바디를 Map으로 역직렬화한다. 이때 JSON에서 이메일과 비밀번호를 추출한다.
 
-        String email = usernamePasswordMap.get(USERNAME_KEY);
-        String password = usernamePasswordMap.get(PASSWORD_KEY);
+        String email = usernamePasswordMap.get(USERNAME_KEY);   //Map으로 변환한 Email 저장
+        String password = usernamePasswordMap.get(PASSWORD_KEY);    //Map으로 변환한 Password 저장
 
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(email, password);//principal 과 credentials 전달
+        //
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }

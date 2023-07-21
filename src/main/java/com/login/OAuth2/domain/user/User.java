@@ -22,8 +22,8 @@ public class User {
     private String password; // 비밀번호
     private String nickname; // 닉네임
     private String imageUrl; // 프로필 이미지
-    private int age;
-    private String city; // 사는 도시
+//    private int age;
+//    private String city; // 사는 도시
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -37,6 +37,7 @@ public class User {
 
     // 유저 권한 설정 메소드
     public void authorizeUser() {
+        System.out.println(">> User.authorizeUser() 호출 - role, User로 변경");
         this.role = Role.USER;
     }
 

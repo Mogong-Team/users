@@ -8,12 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Optional;
 
+@Transactional(readOnly = true) //읽기 전용임. 하위에 있는 모든 메서드 읽기. 만약 update
 @Service
 @RequiredArgsConstructor
 @Getter
@@ -50,6 +52,7 @@ public class JwtService {
      * AccessToken 생성 메소드
      */
     public String createAccessToken(String email) {
+        System.out.println(">> JwtService.createAccessToken() 실행 - jwt accessToken 생성");
         Date now = new Date();
         return JWT.create() // JWT 토큰을 생성하는 빌더 반환
                 .withSubject(ACCESS_TOKEN_SUBJECT) // JWT의 Subject 지정 -> AccessToken이므로 AccessToken
@@ -67,6 +70,7 @@ public class JwtService {
      * RefreshToken은 Claim에 email도 넣지 않으므로 withClaim() X
      */
     public String createRefreshToken() {
+        System.out.println(">> JwtService.createRefreshToken() 실행 - jwt refreshToken 생성");
         Date now = new Date();
         return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
@@ -88,11 +92,15 @@ public class JwtService {
      * AccessToken + RefreshToken 헤더에 실어서 보내기
      */
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
+        System.out.println(">> JwtService.sendAccessAndRefreshToken() 실행 - 액토 + 리토 응답 헤더에 붙임");
         response.setStatus(HttpServletResponse.SC_OK);
 
+        System.out.println(">> >> accessToken : " + accessToken);
         setAccessTokenHeader(response, accessToken);
+        System.out.println(">> >> refreshToken : " + refreshToken);
         setRefreshTokenHeader(response, refreshToken);
         log.info("Access Token, Refresh Token 헤더 설정 완료");
+        System.out.println(">> >> Access Token, Refresh Token 헤더 설정 완료");
     }
 
     /**
@@ -101,6 +109,7 @@ public class JwtService {
      * 헤더를 가져온 후 "Bearer"를 삭제(""로 replace)
      */
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
+        System.out.println(">> JwtService.extractRefreshToken() 실행 - jwt 리토 요청 헤더에서 추출");
         return Optional.ofNullable(request.getHeader(refreshHeader))
                 .filter(refreshToken -> refreshToken.startsWith(BEARER))
                 .map(refreshToken -> refreshToken.replace(BEARER, ""));
@@ -112,6 +121,7 @@ public class JwtService {
      * 헤더를 가져온 후 "Bearer"를 삭제(""로 replace)
      */
     public Optional<String> extractAccessToken(HttpServletRequest request) {
+        System.out.println(">> JwtService.extractAccessToken() 실행 - jwt 액토 요청 헤더에서 추출");
         return Optional.ofNullable(request.getHeader(accessHeader))
                 .filter(refreshToken -> refreshToken.startsWith(BEARER))
                 .map(refreshToken -> refreshToken.replace(BEARER, ""));
@@ -125,6 +135,7 @@ public class JwtService {
      * 유효하지 않다면 빈 Optional 객체 반환
      */
     public Optional<String> extractEmail(String accessToken) {
+        System.out.println(">> JwtService.extractEmail() 실행 - jwt 액토에서 email 추출");
         try {
             // 토큰 유효성 검사하는 데에 사용할 알고리즘이 있는 JWT verifier builder 반환
             return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
@@ -134,6 +145,7 @@ public class JwtService {
                     .asString());
         } catch (Exception e) {
             log.error("액세스 토큰이 유효하지 않습니다.");
+            System.out.println(">> >> 액세스 토큰이 유효하지 않습니다.");
             return Optional.empty();
         }
     }
@@ -142,6 +154,7 @@ public class JwtService {
      * AccessToken 헤더 설정
      */
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
+        System.out.println(">> JwtService.setAccessTokenHeader() 실행 - jwt 응답 헤더에 액토 설정");
         response.setHeader(accessHeader, accessToken);
     }
 
@@ -149,13 +162,16 @@ public class JwtService {
      * RefreshToken 헤더 설정
      */
     public void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
+        System.out.println(">> JwtService.setRefreshTokenHeader() 실행 - jwt 응답 헤더에 리토 설정");
         response.setHeader(refreshHeader, refreshToken);
     }
-
+//
     /**
      * RefreshToken DB 저장(업데이트)
      */
+    @Transactional(readOnly = false)
     public void updateRefreshToken(String email, String refreshToken) {
+        System.out.println(">> JwtService.updateRefreshToken() 실행 - jwt 리토 유저 DB에 저장");
         userRepository.findByEmail(email)
                 .ifPresentOrElse(
                         user -> user.updateRefreshToken(refreshToken),
@@ -164,11 +180,13 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token) {
+        System.out.println(">> JwtService.isTokenValid() 실행 - jwt 토큰 검사");
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
             return true;
         } catch (Exception e) {
             log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
+            System.out.println(">> >> 유효하지 않은 토큰입니다. " + e.getMessage());
             return false;
         }
     }
