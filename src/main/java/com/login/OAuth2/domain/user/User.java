@@ -22,8 +22,6 @@ public class User {
     private String password; // 비밀번호
     private String nickname; // 닉네임
     private String imageUrl; // 프로필 이미지
-//    private int age;
-//    private String city; // 사는 도시
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -48,5 +46,9 @@ public class User {
 
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
+    }
+
+    public void updateNickname(String updateNickname){
+        this.nickname = updateNickname;
     }
 }

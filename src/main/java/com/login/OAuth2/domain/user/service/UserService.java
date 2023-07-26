@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -37,6 +39,24 @@ public class UserService {
 
         //pwd를 먼저 빌드하고 후에 유저의 passwordEncode 메서드로 pwd를 암호화한다.
         user.passwordEncode(passwordEncoder);
+        userRepository.save(user);
+
+    }
+
+    public User findUser(Long id){
+        System.out.println(">> UserService.findUser() 호출 - 유저 찾기");
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + id + "Not Found"));
+    }
+
+    public void updateNickname(User user, String nickname){
+        System.out.println(">> UserService.updateNickname() 호출 - 닉네임 수정");
+        user.updateNickname(nickname);
+        userRepository.save(user);
+    }
+
+    public void updateUserRole(User user){
+        user.authorizeUser();
         userRepository.save(user);
     }
 
