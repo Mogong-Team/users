@@ -8,9 +8,12 @@ import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.oauth2.CustomOAuth2User;
 import com.nimbusds.jose.util.BoundedInputStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -52,8 +55,25 @@ public class OAuth2Controller {
          * 여기서 생성. 유저. 그 전에 게스트도 줄 필요가 없다.
          *
          * */
-
-
-        return "redirect:/home";
+        return "redirect:/";
     }
+
+//    @PostMapping("/logout")
+//    public String logout(){
+//        System.out.println(">> OAuth2Controller.logout() 호출");
+//
+//        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+//        Optional<String> accessToken = jwtService.extractAccessToken(request);
+//        System.out.println(">> >> Before : " + accessToken);
+//
+//        if(accessToken.isPresent()){
+//            String expiredAccessToken = jwtService.expireAccessToken(accessToken.get());
+//            System.out.println(">> >> After : " + expiredAccessToken);
+//
+//            return "로그아웃 성공";
+//        } else{
+//            System.out.println(">> >> 액세스 토큰이 없음");
+//            return "액세스 토큰이 없음";
+//        }
+//    }
 }

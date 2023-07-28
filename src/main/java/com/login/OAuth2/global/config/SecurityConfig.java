@@ -1,7 +1,6 @@
 package com.login.OAuth2.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.login.OAuth2.domain.user.Role;
 import com.login.OAuth2.domain.user.repository.UserRepository;
 import com.login.OAuth2.global.jwt.filter.JwtAuthenticationProcessingFilter;
 import com.login.OAuth2.global.jwt.service.JwtService;
@@ -9,6 +8,7 @@ import com.login.OAuth2.global.login.filter.CustomJsonUsernamePasswordAuthentica
 import com.login.OAuth2.global.login.handler.LoginFailureHandler;
 import com.login.OAuth2.global.login.handler.LoginSuccessHandler;
 import com.login.OAuth2.global.login.service.LoginService;
+import com.login.OAuth2.global.logout.handler.CustomLogoutSuccessHandler;
 import com.login.OAuth2.global.oauth2.handler.OAuth2LoginFailureHandler;
 import com.login.OAuth2.global.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.login.OAuth2.global.oauth2.serivce.CustomOAuth2UserService;
@@ -25,6 +25,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 /**
  * 인증은 CustomJsonUsernamePasswordAuthenticationFilter에서 authenticate()로 인증된 사용자로 처리
@@ -42,10 +43,12 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.out.println(">> SecurityConfig.SecurityFilterChain() 실행");
+
         http
                 .formLogin().disable() // FormLogin 사용 X
                 .httpBasic().disable()
@@ -60,14 +63,19 @@ public class SecurityConfig {
 
                 //== URL별 권한 관리 옵션 ==//
                 .authorizeRequests()
-                .antMatchers("/","/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**").permitAll()
+                .antMatchers("/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**").permitAll()
                 .antMatchers("/sign-up").permitAll() // 회원가입 접근 가능
                 .antMatchers("/oauth2/sign-up/**").permitAll()
                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
+
                 .and()
-                //== 소셜 로그인 설정 ==//
                 .logout()
+                .logoutUrl("/logout")
                 .logoutSuccessUrl("/login")
+                .deleteCookies("JSESSIONID", "remember-me")
+                .logoutSuccessHandler(customLogoutSuccessHandler)
+
+                //== 소셜 로그인 설정 ==//
                 .and()
                 .oauth2Login()
                 .successHandler(oAuth2LoginSuccessHandler) // 동의하고 계속하기를 눌렀을 때 Handler 설정

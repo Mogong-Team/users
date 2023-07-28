@@ -2,6 +2,7 @@ package com.login.OAuth2.global.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.login.OAuth2.domain.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Transactional(readOnly = true) //읽기 전용임. 하위에 있는 모든 메서드 읽기. 만약 update
 @Service
@@ -47,6 +49,7 @@ public class JwtService {
     private static final String BEARER = "Bearer ";
 
     private final UserRepository userRepository;
+    private final TokenBlackListService tokenBlackListService;
 
     /**
      * AccessToken 생성 메소드
@@ -181,6 +184,12 @@ public class JwtService {
 
     public boolean isTokenValid(String token) {
         System.out.println(">> JwtService.isTokenValid() 실행 - jwt 토큰 검사");
+
+        if(tokenBlackListService.isTokenBlacklisted(token)){
+            System.out.println(">> >> 토큰 블랙리스트에 들어있음");
+            return false;
+        }
+
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
             return true;
@@ -188,6 +197,29 @@ public class JwtService {
             log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
             System.out.println(">> >> 유효하지 않은 토큰입니다. " + e.getMessage());
             return false;
+        }
+    }
+
+    public String expireAccessToken(String accessToken){
+        System.out.println(">> JwtService.expireAccessToken() 호출 - 액토 만료시키기");
+
+        try{
+            DecodedJWT jwt = JWT.decode(accessToken);
+
+            long expiresInMs = jwt.getExpiresAt().getTime() - System.currentTimeMillis();
+            long expiresInMinutes = TimeUnit.MILLISECONDS.toMinutes(expiresInMs);
+
+            long newExpirationTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1);
+
+            return JWT.create()
+                    .withSubject(ACCESS_TOKEN_SUBJECT)
+                    .withExpiresAt(new Date(newExpirationTime))
+                    .withClaim(EMAIL_CLAIM, jwt.getClaim(EMAIL_CLAIM).asString())
+                    .sign(Algorithm.HMAC512(secretKey));
+        } catch (Exception e){
+            log.error("Failed to expire the access token: {}", e.getMessage());
+            System.out.println("Failed to expire the access token : " + e.getMessage());
+            return null;
         }
     }
 }
