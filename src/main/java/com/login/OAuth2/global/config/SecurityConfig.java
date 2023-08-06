@@ -63,7 +63,7 @@ public class SecurityConfig {
 
                 //== URL별 권한 관리 옵션 ==//
                 .authorizeRequests()
-                .antMatchers("/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**").permitAll()
+                .antMatchers("/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**", "/swagger-ui/**").permitAll()
                 .antMatchers("/sign-up").permitAll() // 회원가입 접근 가능
                 .antMatchers("/oauth2/sign-up/**").permitAll()
                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능

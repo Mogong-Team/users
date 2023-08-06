@@ -52,12 +52,15 @@ public class UserService {
     public void updateNickname(User user, String nickname){
         System.out.println(">> UserService.updateNickname() 호출 - 닉네임 수정");
         user.updateNickname(nickname);
+
+        if(user.getRole() == Role.GUEST){
+            user.authorizeUser();
+        }
         userRepository.save(user);
     }
 
-    public void updateUserRole(User user){
-        user.authorizeUser();
-        userRepository.save(user);
+    public boolean isNicknameExists(String nickname){
+        return userRepository.findByNickname(nickname).isPresent();
     }
 
 //    public void updateRefreshToken(String email, String refreshToken) {

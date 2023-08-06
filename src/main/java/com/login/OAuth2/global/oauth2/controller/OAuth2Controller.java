@@ -8,6 +8,7 @@ import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.oauth2.CustomOAuth2User;
 import com.nimbusds.jose.util.BoundedInputStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -34,20 +35,20 @@ public class OAuth2Controller {
     }
 
     @PostMapping("/sign-up/{id}")
-    public String setNickname(@PathVariable Long id, @RequestParam("nickname") String nickname){
+    public ResponseEntity<String> setNickname(@PathVariable Long id, @RequestParam("nickname") String nickname){
         System.out.println(">> OAuth2Controller.setNicname() 실행 - 유저아이디 : " + id + " 닉네임 : " + nickname);
 
         User user = userService.findUser(id);
         System.out.println(">> >> after findUser : " + user.getNickname());
 
         if(user != null){
+
+            if(userService.isNicknameExists(nickname)){
+                System.out.println(">> >> >> Error: Nickname already exists.");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Nickname already exists. Please choose a different nickname.");
+            }
             userService.updateNickname(user, nickname);
             System.out.println(">> >> after updateNickname : " + user.getNickname());
-
-            if(user.getRole() == Role.GUEST){
-                userService.updateUserRole(user);
-            }
-
         }
 
         /**
@@ -55,7 +56,7 @@ public class OAuth2Controller {
          * 여기서 생성. 유저. 그 전에 게스트도 줄 필요가 없다.
          *
          * */
-        return "redirect:/";
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 //    @PostMapping("/logout")

@@ -20,7 +20,10 @@ public class User {
 
     private String email; // 이메일
     private String password; // 비밀번호
+
+    @Column(unique = true)
     private String nickname; // 닉네임
+
     private String imageUrl; // 프로필 이미지
 
     @Enumerated(EnumType.STRING)
