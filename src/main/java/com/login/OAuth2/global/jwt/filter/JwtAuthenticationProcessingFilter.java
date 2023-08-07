@@ -57,11 +57,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
             return; // return으로 이후 현재 필터 진행 막기 (안해주면 아래로 내려가서 계속 필터 진행시킴)
         }
-//        else if(request.getRequestURI().equals(OAUTH_SIGNUP_URL)){
-//            System.out.println(">> >> URL check - /oauth2/sign-up 요청인가??");
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
 
 
         System.out.println(">> >> 요청 헤더에서 refreshToken 추출 - /login 요청이 아니기 때문에");
@@ -118,7 +113,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             Optional<String> email = jwtService.extractEmail(accessToken.get());
             System.out.println("email : " + email);
             if (email.isPresent()) {
-                userRepository.findByEmail(email.get()).ifPresent(this::saveAuthentication);
+                userRepository.findBySocialId(email.get()).ifPresent(this::saveAuthentication);
+                System.out.println(">> >> >> 이메일 디비에서 찾음. saveAuthentication 했음.");
+            } else{
+                System.out.println(">> >> >> 이메일을 디비에서 찾을 수가 없음.");
             }
         }
 //        jwtService.extractAccessToken(request)  //요청 헤더에서 액토 추출

@@ -17,6 +17,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.parser.Entity;
 import java.util.Optional;
 
 
@@ -59,22 +60,13 @@ public class OAuth2Controller {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-//    @PostMapping("/logout")
-//    public String logout(){
-//        System.out.println(">> OAuth2Controller.logout() 호출");
-//
-//        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-//        Optional<String> accessToken = jwtService.extractAccessToken(request);
-//        System.out.println(">> >> Before : " + accessToken);
-//
-//        if(accessToken.isPresent()){
-//            String expiredAccessToken = jwtService.expireAccessToken(accessToken.get());
-//            System.out.println(">> >> After : " + expiredAccessToken);
-//
-//            return "로그아웃 성공";
-//        } else{
-//            System.out.println(">> >> 액세스 토큰이 없음");
-//            return "액세스 토큰이 없음";
-//        }
-//    }
+    @PostMapping("/duplicate-check")
+    public ResponseEntity<String> duplicateCheck(@RequestParam("nickname") String nickname){
+
+        if(userService.isNicknameExists(nickname)){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Nickname already exists.");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
