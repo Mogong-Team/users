@@ -3,6 +3,7 @@ package com.login.OAuth2.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.login.OAuth2.domain.user.repository.UserRepository;
 import com.login.OAuth2.global.jwt.filter.JwtAuthenticationProcessingFilter;
+import com.login.OAuth2.global.jwt.handler.JwtAccessDeniedHandler;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.login.filter.CustomJsonUsernamePasswordAuthenticationFilter;
 import com.login.OAuth2.global.login.handler.LoginFailureHandler;
@@ -46,6 +47,8 @@ public class SecurityConfig {
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -67,7 +70,7 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**", "/swagger-ui/**").permitAll()
                 .antMatchers("/sign-up").permitAll() // 회원가입 접근 가능
-                .antMatchers("/oauth2/sign-up/**").permitAll()
+                .antMatchers("/oauth2/sign-up").permitAll()
                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
 
                 .and()
@@ -84,11 +87,14 @@ public class SecurityConfig {
                 .failureHandler(oAuth2LoginFailureHandler) // 소셜 로그인 실패 시 핸들러 설정
                 .userInfoEndpoint().userService(customOAuth2UserService); // customUserService 설정
 
+        http.exceptionHandling()
+                .accessDeniedHandler(jwtAccessDeniedHandler);
+
         // 원래 스프링 시큐리티 필터 순서가 LogoutFilter 이후에 로그인 필터 동작
         // 따라서, LogoutFilter 이후에 우리가 만든 필터 동작하도록 설정
         // 순서 : LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         http.addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class);
-        http.addFilterBefore(jwtAuthenticationProcessingFilter(), CustomJsonUsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationProcessingFilter, CustomJsonUsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -147,11 +153,5 @@ public class SecurityConfig {
         customJsonUsernamePasswordLoginFilter.setAuthenticationSuccessHandler(loginSuccessHandler());
         customJsonUsernamePasswordLoginFilter.setAuthenticationFailureHandler(loginFailureHandler());
         return customJsonUsernamePasswordLoginFilter;
-    }
-
-    @Bean
-    public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-        JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository);
-        return jwtAuthenticationFilter;
     }
 }

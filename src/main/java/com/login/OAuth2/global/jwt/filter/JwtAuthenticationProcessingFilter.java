@@ -13,6 +13,8 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -37,6 +39,7 @@ import java.util.Optional;
  */
 @RequiredArgsConstructor
 @Slf4j
+@Component
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private static final String NO_CHECK_URL = "/login"; // "/login"으로 들어오는 요청은 Filter 작동 X
@@ -53,27 +56,61 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         log.info(">> > request : " + request.getRequestURI());
 
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
-            log.info(">> >> URL check - /login 요청인가??");
+            log.info(">> >> URL check - /login 요청");
             filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
             return; // return으로 이후 현재 필터 진행 막기 (안해주면 아래로 내려가서 계속 필터 진행시킴)
         }
 
+        Optional<String> token = jwtService.extractAccessToken(request);
 
-        log.info(">> >> 요청 헤더에서 refreshToken 추출 - /login 요청이 아니기 때문에");
-        String refreshToken = jwtService.extractRefreshToken(request)   //토큰 헤더에서 refreshToken추출
-                .filter(jwtService::isTokenValid)   //유효성을 검사
-                .orElse(null);  //유효하지 않으면 null 반환
+        // 액토 검사
+        if(token.isPresent()){
+            if(jwtService.isTokenValid(token.get())) {
+                Optional<Long> userId = jwtService.extractUserId(token.get());
 
-        if (refreshToken != null) { //헤더에 리토가 있으면
-            log.info(">> >> >> refreshToken이 null이 아니다");
-            checkRefreshTokenAndReIssueAccessToken(response, refreshToken); //메서드 실행
-            return; // RefreshToken을 보낸 경우에는 AccessToken을 재발급 하고 인증 처리는 하지 않게 하기위해 바로 return으로 필터 진행 막기
+                if (userId.isPresent()) {
+                    userRepository.findById(userId.get()).ifPresent(this::saveAuthentication);
+                    log.info("요청 유저의 인증정보 저장");
+                }
+            } else{
+                log.info("Access Token이 유효하지 않음");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+        }else{
+            log.info("Access Token이 없음");
+
+            String refreshToken = jwtService.extractRefreshToken(request)
+                    .filter(jwtService::isTokenValid)
+                    .orElse(null);
+
+            if(refreshToken != null){
+                checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
+                response.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+
+            log.info("Access Token, Refresh Token 모두 없음");
         }
 
-        if (refreshToken == null) { //헤더에 리토가 없으면
-            log.info(">> >> >> refreshToken이 null이다 - AccessToken을 검사해야 한다");
-            checkAccessTokenAndAuthentication(request, response, filterChain);  //액토가 유효한지를 판단함
-        }
+        filterChain.doFilter(request, response);
+
+
+//        log.info(">> >> 요청 헤더에서 refreshToken 추출 - /login 요청이 아니기 때문에");
+//        String refreshToken = jwtService.extractRefreshToken(request)   //토큰 헤더에서 refreshToken추출
+//                .filter(jwtService::isTokenValid)   //유효성을 검사
+//                .orElse(null);  //유효하지 않으면 null 반환
+//
+//        if (refreshToken != null) { //헤더에 리토가 있으면
+//            log.info(">> >> >> refreshToken이 null이 아니다");
+//            checkRefreshTokenAndReIssueAccessToken(response, refreshToken); //메서드 실행
+//            return; // RefreshToken을 보낸 경우에는 AccessToken을 재발급 하고 인증 처리는 하지 않게 하기위해 바로 return으로 필터 진행 막기
+//        }
+//
+//        if (refreshToken == null) { //헤더에 리토가 없으면
+//            log.info(">> >> >> refreshToken이 null이다 - AccessToken을 검사해야 한다");
+//            checkAccessTokenAndAuthentication(request, response, filterChain);  //액토가 유효한지를 판단함
+//        }
     }
 
     /**
@@ -118,11 +155,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 log.info(">> >> >> 유저 아이디 디비에서 찾을 수가 없음.");
             }
         }
-//        jwtService.extractAccessToken(request)  //요청 헤더에서 액토 추출
-//                .filter(jwtService::isTokenValid)   //액토 유효성 검사
-//                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)  //요청 헤더에서 유저 이메일 추출 후
-//                        .ifPresent(email -> userRepository.findByEmail(email)   //이메일로 해당 유저 찾음
-//                                .ifPresent(this::saveAuthentication))); //saveAuthentication() 파라미터로 유저를 넘겨
 
         filterChain.doFilter(request, response);    //해당 유저의 인증 처리를 한다.
     }
