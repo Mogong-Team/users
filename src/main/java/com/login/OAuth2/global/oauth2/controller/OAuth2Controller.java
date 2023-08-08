@@ -8,6 +8,8 @@ import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.oauth2.CustomOAuth2User;
 import com.nimbusds.jose.util.BoundedInputStream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.swing.text.html.parser.Entity;
 import java.util.Optional;
 
-
+@Slf4j
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/oauth2")
@@ -29,27 +31,29 @@ public class OAuth2Controller {
     private final JwtService jwtService;
     private final UserService userService;
 
-    @GetMapping("/sign-up/{id}")
+    @GetMapping("/sign-up")
     public String oAuthSignUp(){
-        System.out.println(">> OAuth2Controller.oAuthSignUp 실행 : /oauth2/sign-up : 여기서 닉네임을 받는다 접근");
+        log.info(">> OAuth2Controller.oAuthSignUp 실행 : /oauth2/sign-up : 여기서 닉네임을 받는다 접근");
         return "signup";
     }
 
-    @PostMapping("/sign-up/{id}")
-    public ResponseEntity<String> setNickname(@PathVariable Long id, @RequestParam("nickname") String nickname){
-        System.out.println(">> OAuth2Controller.setNicname() 실행 - 유저아이디 : " + id + " 닉네임 : " + nickname);
+    @PostMapping("/sign-up")
+    public ResponseEntity<String> setNickname(HttpServletRequest request, @RequestParam("nickname") String nickname){
+        log.info(">> OAuth2Controller.setNicname() 실행 - 닉네임 : {}", nickname);
 
-        User user = userService.findUser(id);
-        System.out.println(">> >> after findUser : " + user.getNickname());
+        Optional<String> accessToken = jwtService.extractAccessToken(request);
+        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
 
-        if(user != null){
 
+        if(userId.isPresent()){
             if(userService.isNicknameExists(nickname)){
-                System.out.println(">> >> >> Error: Nickname already exists.");
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Nickname already exists. Please choose a different nickname.");
+                log.error(">> >> >> Error: Nickname already exists.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists. Please choose a different nickname.");
             }
-            userService.updateNickname(user, nickname);
-            System.out.println(">> >> after updateNickname : " + user.getNickname());
+            userService.updateNickname(userService.findUser(userId.get()), nickname);
+            log.info(">> >> after updateNickname : " + nickname);
+        } else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found.");
         }
 
         /**
@@ -57,14 +61,14 @@ public class OAuth2Controller {
          * 여기서 생성. 유저. 그 전에 게스트도 줄 필요가 없다.
          *
          * */
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/duplicate-check")
     public ResponseEntity<String> duplicateCheck(@RequestParam("nickname") String nickname){
 
         if(userService.isNicknameExists(nickname)){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Nickname already exists.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists.");
         }
 
         return ResponseEntity.status(HttpStatus.OK).build();

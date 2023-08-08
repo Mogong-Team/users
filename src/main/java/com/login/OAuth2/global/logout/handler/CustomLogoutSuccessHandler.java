@@ -24,7 +24,7 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        System.out.println(">> CustomLogoutSuccessHandler.onLogoutSuccess() 호출");
+        log.info(">> CustomLogoutSuccessHandler.onLogoutSuccess() 호출");
 
         try{
             Optional<String> accessToken = jwtService.extractAccessToken(request);
@@ -32,13 +32,13 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
                 String token = accessToken.get();
                 tokenBlackListService.blackListToken(token);
             }else{
-                System.out.println(">> >> request에 액토가 없다");
+                log.error(">> >> request에 액토가 없다");
             }
         } catch (Exception e){
             e.printStackTrace();
         }
         response.setStatus(HttpServletResponse.SC_OK);
-        System.out.println(">> >> /login 페이지로 이동한다");
+        log.info(">> >> /login 페이지로 이동한다");
         response.sendRedirect("/login");
     }
 }

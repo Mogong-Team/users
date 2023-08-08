@@ -2,34 +2,46 @@ package com.login.OAuth2.domain.user.mypage.controller;
 
 import com.login.OAuth2.domain.user.User;
 import com.login.OAuth2.domain.user.service.UserService;
+import com.login.OAuth2.global.jwt.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
+
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class MyPageController {
 
+    private final JwtService jwtService;
     private final UserService userService;
 
-    @PostMapping("/{id}/change-nickname")
-    public ResponseEntity<String> changeNickname(@PathVariable Long id, @RequestParam("nickname") String newNickname){
-        System.out.println(">> MyPageController.changeNickname() 호출");
+    @PostMapping("/change-nickname")
+    public ResponseEntity<String> changeNickname(HttpServletRequest request, @RequestParam("nickname") String newNickname){
+        log.info(">> MyPageController.changeNickname() 호출");
 
-        User user = userService.findUser(id);
+        Optional<String> accessToken = jwtService.extractAccessToken(request);
+        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
 
-        if(user != null){
-            if(userService.isNicknameExists(newNickname)){
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("New nickname already exists.");
+        if(userId.isPresent()) {
+            User user = userService.findUser(userId.get());
+
+            if (user != null) {
+                if (userService.isNicknameExists(newNickname)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("New nickname already exists.");
+                }
+                userService.updateNickname(user, newNickname);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
             }
-            userService.updateNickname(user, newNickname);
-        } else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

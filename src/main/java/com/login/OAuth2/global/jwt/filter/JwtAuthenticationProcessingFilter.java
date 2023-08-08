@@ -49,29 +49,29 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("\n>> JwtAuthenticationProcessingFilter.doFilterInternal() 실행 - 인증 처리/인증 실패/토큰 재발급 로직 수행");
-        System.out.println(">> > request : " + request.getRequestURI());
+        log.info("\n>> JwtAuthenticationProcessingFilter.doFilterInternal() 실행 - 인증 처리/인증 실패/토큰 재발급 로직 수행");
+        log.info(">> > request : " + request.getRequestURI());
 
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
-            System.out.println(">> >> URL check - /login 요청인가??");
+            log.info(">> >> URL check - /login 요청인가??");
             filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
             return; // return으로 이후 현재 필터 진행 막기 (안해주면 아래로 내려가서 계속 필터 진행시킴)
         }
 
 
-        System.out.println(">> >> 요청 헤더에서 refreshToken 추출 - /login 요청이 아니기 때문에");
+        log.info(">> >> 요청 헤더에서 refreshToken 추출 - /login 요청이 아니기 때문에");
         String refreshToken = jwtService.extractRefreshToken(request)   //토큰 헤더에서 refreshToken추출
                 .filter(jwtService::isTokenValid)   //유효성을 검사
                 .orElse(null);  //유효하지 않으면 null 반환
 
         if (refreshToken != null) { //헤더에 리토가 있으면
-            System.out.println(">> >> >> refreshToken이 null이 아니다");
+            log.info(">> >> >> refreshToken이 null이 아니다");
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken); //메서드 실행
             return; // RefreshToken을 보낸 경우에는 AccessToken을 재발급 하고 인증 처리는 하지 않게 하기위해 바로 return으로 필터 진행 막기
         }
 
         if (refreshToken == null) { //헤더에 리토가 없으면
-            System.out.println(">> >> >> refreshToken이 null이다 - AccessToken을 검사해야 한다");
+            log.info(">> >> >> refreshToken이 null이다 - AccessToken을 검사해야 한다");
             checkAccessTokenAndAuthentication(request, response, filterChain);  //액토가 유효한지를 판단함
         }
     }
@@ -80,11 +80,11 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      *  [리프레시 토큰으로 유저 정보 찾기 & 액세스 토큰/리프레시 토큰 재발급 메소드]
      */
     public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) { //헤더에 리토가 이씅면 실행됨
-        System.out.println(">> JwtAuthenticationProcessingFilter.checkRefreshTokenAndReIssueAccessToken() 실행 - 헤더에 리토가 있기 때문에 실행된다.");
+        log.info(">> JwtAuthenticationProcessingFilter.checkRefreshTokenAndReIssueAccessToken() 실행 - 헤더에 리토가 있기 때문에 실행된다.");
         userRepository.findByRefreshToken(refreshToken) //헤더에서 추출한 리토로 DB에서 유저를 일단 찾음
                 .ifPresent(user -> {    //해당 유저가 있으면
                     String reIssuedRefreshToken = reIssueRefreshToken(user);    //유저에 대한 리토를 재발급해주고 리토 DB에 새로 저장
-                    jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()), reIssuedRefreshToken);
+                    jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getId()), reIssuedRefreshToken);
                     //유저에 대한 액토를 재발급하고 sendAccessAndRefreshToken 메서드를 호출해 재발급한 액토, 리토를 response에 보낸다. (헤더에 붙인다)
                 });
     }
@@ -104,19 +104,18 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      */
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
                                                   FilterChain filterChain) throws ServletException, IOException {   //액토 체크, 인증
-        log.info("checkAccessTokenAndAuthentication() 호출");
-        System.out.println(">> JwtAuthenticationProcessingFilter.checkAccessTokenAndAuthentication() 호출");
+        log.info(">> JwtAuthenticationProcessingFilter.checkAccessTokenAndAuthentication() 호출");
 
         Optional<String> accessToken = jwtService.extractAccessToken(request);
-        System.out.println(">> >> accessToken : " + accessToken);
+        log.info(">> >> accessToken : {}", accessToken);
         if (accessToken.isPresent() && jwtService.isTokenValid(accessToken.get())) {
-            Optional<String> email = jwtService.extractEmail(accessToken.get());
-            System.out.println("email : " + email);
-            if (email.isPresent()) {
-                userRepository.findBySocialId(email.get()).ifPresent(this::saveAuthentication);
-                System.out.println(">> >> >> 이메일 디비에서 찾음. saveAuthentication 했음.");
+            Optional<Long> UserId = jwtService.extractUserId(accessToken.get());
+            log.info("User Id : {}", UserId);
+            if (UserId.isPresent()) {
+                userRepository.findById(Long.valueOf(UserId.get())).ifPresent(this::saveAuthentication);
+                log.info(">> >> >> 유저 아이디 디비에서 찾음. saveAuthentication 했음.");
             } else{
-                System.out.println(">> >> >> 이메일을 디비에서 찾을 수가 없음.");
+                log.info(">> >> >> 유저 아이디 디비에서 찾을 수가 없음.");
             }
         }
 //        jwtService.extractAccessToken(request)  //요청 헤더에서 액토 추출
@@ -132,8 +131,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * [인증 허가 메소드]
      */
     public void saveAuthentication(User myUser) {
-        System.out.println(">> JwtAuthenticationProcessingFilter.saveAuthentication() 호출");
-        System.out.println(">> >> myUser : " + myUser);
+        log.info(">> JwtAuthenticationProcessingFilter.saveAuthentication() 호출");
+        log.info(">> >> myUser : {}", myUser);
         String password = myUser.getPassword(); //파라미터로 들어온 유저의 password
         if (password == null) { // 소셜 로그인 유저의 비밀번호 임의로 설정 하여 소셜 로그인 유저도 인증 되도록 설정
             password = PasswordUtil.generateRandomPassword();   //소셜 로그인으로 하여 password가 없으면 임의로 생성 시켜놓는다

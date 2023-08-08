@@ -13,6 +13,7 @@ import com.login.OAuth2.global.oauth2.handler.OAuth2LoginFailureHandler;
 import com.login.OAuth2.global.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.login.OAuth2.global.oauth2.serivce.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +32,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
  * 인증은 CustomJsonUsernamePasswordAuthenticationFilter에서 authenticate()로 인증된 사용자로 처리
  * JwtAuthenticationProcessingFilter는 AccessToken, RefreshToken 재발급
  */
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        System.out.println(">> SecurityConfig.SecurityFilterChain() 실행");
+        log.info("SecurityConfig.SecurityFilterChain() 실행");
 
         http
                 .formLogin().disable() // FormLogin 사용 X
@@ -93,7 +95,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        System.out.println(">> SecurityConfig.passwordEncoder() 실행");
+        log.info("SecurityConfig.passwordEncoder() 실행");
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
@@ -107,7 +109,7 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        System.out.println(">> SecurityConfig.authenticationManager() 실행");
+        log.info("SecurityConfig.authenticationManager() 실행");
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         provider.setUserDetailsService(loginService);
@@ -119,7 +121,7 @@ public class SecurityConfig {
      */
     @Bean
     public LoginSuccessHandler loginSuccessHandler() {
-        System.out.println(">> SecurityConfig.LoginSuccessHandler() 실행");
+        log.info("SecurityConfig.LoginSuccessHandler() 실행");
         return new LoginSuccessHandler(jwtService, userRepository);
     }
 

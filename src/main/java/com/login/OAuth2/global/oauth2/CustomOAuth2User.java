@@ -14,7 +14,7 @@ import java.util.Map;
 @Getter
 public class CustomOAuth2User extends DefaultOAuth2User {
 
-    private String email;
+    private Long id;
     private Role role;
 
     /**
@@ -27,9 +27,9 @@ public class CustomOAuth2User extends DefaultOAuth2User {
      */
     public CustomOAuth2User(Collection<? extends GrantedAuthority> authorities,
                             Map<String, Object> attributes, String nameAttributeKey,
-                            String email, Role role) {
+                            Long id, Role role) {
         super(authorities, attributes, nameAttributeKey);   //부모 객체인 DefaultOAuth2User를 생성
-        this.email = email;
+        this.id = id;
         this.role = role;
     }
 }
