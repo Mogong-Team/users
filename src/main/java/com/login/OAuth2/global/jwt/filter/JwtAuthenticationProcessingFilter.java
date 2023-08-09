@@ -74,7 +74,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 }
             } else{
                 log.info("Access Token이 유효하지 않음");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);    // Access Token Error : 401
                 return;
             }
         }else{  // 리토 검사
