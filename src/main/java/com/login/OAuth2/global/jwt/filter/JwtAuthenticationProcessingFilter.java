@@ -77,7 +77,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-        }else{
+        }else{  // 리토 검사
             log.info("Access Token이 없음");
 
             String refreshToken = jwtService.extractRefreshToken(request)
