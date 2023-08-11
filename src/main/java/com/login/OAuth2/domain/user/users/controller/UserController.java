@@ -1,7 +1,7 @@
-package com.login.OAuth2.domain.user.controller;
+package com.login.OAuth2.domain.user.users.controller;
 
-import com.login.OAuth2.domain.user.dto.UserSignUpDto;
-import com.login.OAuth2.domain.user.service.UserService;
+import com.login.OAuth2.domain.user.users.dto.UserSignUpDto;
+import com.login.OAuth2.domain.user.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,5 +25,4 @@ public class UserController {
         return "jwtTest 요청 성공";
     }
 
-//    @GetMapping("/oauth2/sign-up")
 }

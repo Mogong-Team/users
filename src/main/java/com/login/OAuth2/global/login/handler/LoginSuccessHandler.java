@@ -1,7 +1,7 @@
 package com.login.OAuth2.global.login.handler;
 
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.repository.UserRepository;
+import com.login.OAuth2.domain.user.users.User;
+import com.login.OAuth2.domain.user.users.repository.UserRepository;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,12 +1,11 @@
 package com.login.OAuth2.global.jwt.filter;
 
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.repository.UserRepository;
+import com.login.OAuth2.domain.user.users.User;
+import com.login.OAuth2.domain.user.users.repository.UserRepository;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.jwt.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -14,7 +13,6 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;

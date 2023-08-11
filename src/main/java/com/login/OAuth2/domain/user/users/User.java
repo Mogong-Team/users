@@ -1,5 +1,6 @@
-package com.login.OAuth2.domain.user;
+package com.login.OAuth2.domain.user.users;
 
+import com.login.OAuth2.domain.user.profile.BasicProfile;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -24,7 +25,9 @@ public class User {
     @Column(unique = true)
     private String nickname; // 닉네임
 
-    private String imageUrl; // 프로필 이미지
+    @ManyToOne
+    @JoinColumn(name = "basic_profile_id")
+    private BasicProfile basicProfile;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -53,5 +56,9 @@ public class User {
 
     public void updateNickname(String updateNickname){
         this.nickname = updateNickname;
+    }
+
+    public void updateBasicProfile(BasicProfile basicProfile){
+        this.basicProfile = basicProfile;
     }
 }

@@ -1,4 +1,4 @@
-package com.login.OAuth2.domain.user;
+package com.login.OAuth2.domain.user.users;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

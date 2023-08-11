@@ -1,8 +1,8 @@
 package com.login.OAuth2.global.oauth2.serivce;
 
-import com.login.OAuth2.domain.user.SocialType;
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.repository.UserRepository;
+import com.login.OAuth2.domain.user.users.SocialType;
+import com.login.OAuth2.domain.user.users.User;
+import com.login.OAuth2.domain.user.users.repository.UserRepository;
 import com.login.OAuth2.global.oauth2.CustomOAuth2User;
 import com.login.OAuth2.global.oauth2.OAuthAttributes;
 import lombok.RequiredArgsConstructor;

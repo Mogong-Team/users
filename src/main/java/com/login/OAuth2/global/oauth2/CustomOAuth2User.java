@@ -1,6 +1,6 @@
 package com.login.OAuth2.global.oauth2;
 
-import com.login.OAuth2.domain.user.Role;
+import com.login.OAuth2.domain.user.users.Role;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;

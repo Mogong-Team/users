@@ -1,25 +1,17 @@
 package com.login.OAuth2.global.oauth2.controller;
 
-import com.login.OAuth2.domain.user.Role;
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.repository.UserRepository;
-import com.login.OAuth2.domain.user.service.UserService;
+import com.login.OAuth2.domain.user.profile.BasicProfile;
+import com.login.OAuth2.domain.user.profile.service.BasicProfileService;
+import com.login.OAuth2.domain.user.users.service.UserService;
 import com.login.OAuth2.global.jwt.service.JwtService;
-import com.login.OAuth2.global.oauth2.CustomOAuth2User;
-import com.nimbusds.jose.util.BoundedInputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.text.html.parser.Entity;
 import java.util.Optional;
 
 @Slf4j
@@ -30,6 +22,7 @@ public class OAuth2Controller {
 
     private final JwtService jwtService;
     private final UserService userService;
+    private final BasicProfileService basicProfileService;
 
     @GetMapping("/sign-up")
     public String oAuthSignUp(){
@@ -51,7 +44,7 @@ public class OAuth2Controller {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists. Please choose a different nickname.");
             }
             userService.updateNickname(userService.findUser(userId.get()), nickname);
-            log.info(">> >> after updateNickname : " + nickname);
+            basicProfileService.setFirstBasicProfile(userId.get());
         } else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found.");
         }

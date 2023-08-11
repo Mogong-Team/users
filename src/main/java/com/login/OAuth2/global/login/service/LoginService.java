@@ -1,7 +1,7 @@
 package com.login.OAuth2.global.login.service;
 
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.repository.UserRepository;
+import com.login.OAuth2.domain.user.users.User;
+import com.login.OAuth2.domain.user.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

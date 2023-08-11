@@ -1,13 +1,12 @@
 package com.login.OAuth2.domain.user.mypage.controller;
 
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.service.UserService;
+import com.login.OAuth2.domain.user.users.User;
+import com.login.OAuth2.domain.user.users.service.UserService;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,4 +43,9 @@ public class MyPageController {
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+//    @PostMapping("/change-profile")
+//    public ResponseEntity<String> changeProfile(HttpServletRequest request, String imageUrl){
+//
+//    }
 }

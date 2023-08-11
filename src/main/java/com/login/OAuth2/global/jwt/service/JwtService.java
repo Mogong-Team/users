@@ -3,7 +3,7 @@ package com.login.OAuth2.global.jwt.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.login.OAuth2.domain.user.repository.UserRepository;
+import com.login.OAuth2.domain.user.users.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

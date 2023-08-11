@@ -1,4 +1,4 @@
-package com.login.OAuth2.domain.user.dto;
+package com.login.OAuth2.domain.user.users.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

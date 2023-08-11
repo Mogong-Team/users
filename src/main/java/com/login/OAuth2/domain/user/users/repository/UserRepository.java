@@ -1,7 +1,7 @@
-package com.login.OAuth2.domain.user.repository;
+package com.login.OAuth2.domain.user.users.repository;
 
-import com.login.OAuth2.domain.user.SocialType;
-import com.login.OAuth2.domain.user.User;
+import com.login.OAuth2.domain.user.users.SocialType;
+import com.login.OAuth2.domain.user.users.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -13,8 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByNickname(String nickname);
 
     Optional<User> findByRefreshToken(String refreshToken);
-    
-    Optional<User> findBySocialId(String socialId);
 
     /**
      * 소셜 타입과 소셜의 식별값으로 회원 찾는 메소드

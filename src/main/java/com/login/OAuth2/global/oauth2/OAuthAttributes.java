@@ -1,8 +1,8 @@
 package com.login.OAuth2.global.oauth2;
 
-import com.login.OAuth2.domain.user.Role;
-import com.login.OAuth2.domain.user.SocialType;
-import com.login.OAuth2.domain.user.User;
+import com.login.OAuth2.domain.user.users.Role;
+import com.login.OAuth2.domain.user.users.SocialType;
+import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.global.oauth2.userinfo.GoogleOAuth2UserInfo;
 import com.login.OAuth2.global.oauth2.userinfo.KakaoOAuth2UserInfo;
 import com.login.OAuth2.global.oauth2.userinfo.OAuth2UserInfo;
@@ -69,7 +69,7 @@ public class OAuthAttributes {
                 .socialId(oauth2UserInfo.getId())
                 .email(UUID.randomUUID() + "@socialUser.com")
                 .nickname(oauth2UserInfo.getNickname())
-                .imageUrl(oauth2UserInfo.getImageUrl())
+                .basicProfile(null)
                 .role(Role.GUEST)
                 .build();
     }

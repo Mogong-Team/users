@@ -1,17 +1,19 @@
-package com.login.OAuth2.domain.user.service;
+package com.login.OAuth2.domain.user.users.service;
 
-import com.login.OAuth2.domain.user.Role;
-import com.login.OAuth2.domain.user.User;
-import com.login.OAuth2.domain.user.dto.UserSignUpDto;
-import com.login.OAuth2.domain.user.repository.UserRepository;
+import com.login.OAuth2.domain.user.profile.BasicProfile;
+import com.login.OAuth2.domain.user.users.Role;
+import com.login.OAuth2.domain.user.users.User;
+import com.login.OAuth2.domain.user.users.dto.UserSignUpDto;
+import com.login.OAuth2.domain.user.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -40,17 +42,16 @@ public class UserService {
         //pwd를 먼저 빌드하고 후에 유저의 passwordEncode 메서드로 pwd를 암호화한다.
         user.passwordEncode(passwordEncoder);
         userRepository.save(user);
-
     }
 
     public User findUser(Long id){
-        System.out.println(">> UserService.findUser() 호출 - 유저 찾기");
+        log.info(">> UserService.findUser() 호출 - 유저 찾기");
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + id + "Not Found"));
     }
 
     public void updateNickname(User user, String nickname){
-        System.out.println(">> UserService.updateNickname() 호출 - 닉네임 수정");
+        log.info(">> UserService.updateNickname() 호출 - 닉네임 수정");
         user.updateNickname(nickname);
 
         if(user.getRole() == Role.GUEST){
@@ -63,12 +64,9 @@ public class UserService {
         return userRepository.findByNickname(nickname).isPresent();
     }
 
-//    public void updateRefreshToken(String email, String refreshToken) {
-//        System.out.println(">> UserService.updateRefreshToken() 실행 - jwt 리토 유저 DB에 저장");
-//        userRepository.findByEmail(email)
-//                .ifPresentOrElse(
-//                        user -> user.updateRefreshToken(refreshToken),
-//                        () -> new Exception("일치하는 회원이 없습니다.")
-//                );
-//    }
+    public void updateBasicProfile(User user, BasicProfile basicProfile){
+
+        user.updateBasicProfile(basicProfile);
+        userRepository.save(user);
+    }
 }
