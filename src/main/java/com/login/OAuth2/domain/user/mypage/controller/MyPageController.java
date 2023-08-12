@@ -44,8 +44,23 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-//    @PostMapping("/change-profile")
-//    public ResponseEntity<String> changeProfile(HttpServletRequest request, String imageUrl){
-//
-//    }
+    @PostMapping("/change-profile")
+    public ResponseEntity<String> changeProfile(HttpServletRequest request, @RequestParam("imageUrl") String imageUrl){
+
+        Optional<String> accessToken = jwtService.extractAccessToken(request);
+        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
+
+        if(userId.isPresent()){
+            User user = userService.findUser(userId.get());
+
+            if(user == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            userService.changeImageUrl(user, imageUrl);
+            return ResponseEntity.status(HttpStatus.OK).body("Update user's profile");
+        } else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
 }
