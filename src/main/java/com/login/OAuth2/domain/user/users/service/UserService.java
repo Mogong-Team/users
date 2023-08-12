@@ -1,6 +1,5 @@
 package com.login.OAuth2.domain.user.users.service;
 
-import com.login.OAuth2.domain.user.profile.BasicProfile;
 import com.login.OAuth2.domain.user.users.Role;
 import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.domain.user.users.dto.UserSignUpDto;
@@ -50,7 +49,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + id + "Not Found"));
     }
 
-    public void updateNickname(User user, String nickname){
+    public void changeNickname(User user, String nickname){
         log.info(">> UserService.updateNickname() 호출 - 닉네임 수정");
         user.updateNickname(nickname);
 
@@ -64,9 +63,8 @@ public class UserService {
         return userRepository.findByNickname(nickname).isPresent();
     }
 
-    public void updateBasicProfile(User user, BasicProfile basicProfile){
-
-        user.updateBasicProfile(basicProfile);
+    public void changeImageUrl(User user, String imageUrl){
+        user.updateImageUrl(imageUrl);
         userRepository.save(user);
     }
 }

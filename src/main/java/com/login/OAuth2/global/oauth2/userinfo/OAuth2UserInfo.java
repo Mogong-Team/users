@@ -1,7 +1,5 @@
 package com.login.OAuth2.global.oauth2.userinfo;
 
-import com.login.OAuth2.domain.user.profile.BasicProfile;
-
 import java.util.Map;
 
 public abstract class OAuth2UserInfo {

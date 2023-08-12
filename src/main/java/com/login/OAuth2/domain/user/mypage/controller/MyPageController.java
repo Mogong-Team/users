@@ -35,7 +35,7 @@ public class MyPageController {
                 if (userService.isNicknameExists(newNickname)) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("New nickname already exists.");
                 }
-                userService.updateNickname(user, newNickname);
+                userService.changeNickname(user, newNickname);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
             }

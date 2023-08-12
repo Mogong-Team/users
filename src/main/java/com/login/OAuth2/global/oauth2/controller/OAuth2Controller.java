@@ -1,8 +1,8 @@
 package com.login.OAuth2.global.oauth2.controller;
 
-import com.login.OAuth2.domain.user.profile.BasicProfile;
-import com.login.OAuth2.domain.user.profile.service.BasicProfileService;
+import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.domain.user.users.service.UserService;
+import com.login.OAuth2.domain.user.util.ProfileImageUtil;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,6 @@ public class OAuth2Controller {
 
     private final JwtService jwtService;
     private final UserService userService;
-    private final BasicProfileService basicProfileService;
 
     @GetMapping("/sign-up")
     public String oAuthSignUp(){
@@ -31,8 +30,8 @@ public class OAuth2Controller {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<String> setNickname(HttpServletRequest request, @RequestParam("nickname") String nickname){
-        log.info(">> OAuth2Controller.setNicname() 실행 - 닉네임 : {}", nickname);
+    public ResponseEntity<String> createUser(HttpServletRequest request, @RequestParam("nickname") String nickname){
+        log.info(">> OAuth2Controller.createUser() 실행");
 
         Optional<String> accessToken = jwtService.extractAccessToken(request);
         Optional<Long> userId = jwtService.extractUserId(accessToken.get());
@@ -43,8 +42,12 @@ public class OAuth2Controller {
                 log.error(">> >> >> Error: Nickname already exists.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists. Please choose a different nickname.");
             }
-            userService.updateNickname(userService.findUser(userId.get()), nickname);
-            basicProfileService.setFirstBasicProfile(userId.get());
+
+            User user = userService.findUser(userId.get());
+            String randomImageUrl = ProfileImageUtil.getRandomImageUrl();
+
+            userService.changeNickname(user, nickname);
+            userService.changeImageUrl(user, randomImageUrl);
         } else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found.");
         }
