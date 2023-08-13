@@ -38,4 +38,5 @@ out/
 
 /src/main/resources/application-oauth.yml
 /src/main/resources/application-jwt.yml
-#/src/main/resources/application.yml
+/src/main/resources/application.yml
+/src/main/resources/application-aws.yml
