@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class S3Uploader {
+public class S3Service {
 
     private static final String bucket = "mogong-s3-bucket";
 

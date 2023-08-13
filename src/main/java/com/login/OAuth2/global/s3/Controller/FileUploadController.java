@@ -1,6 +1,6 @@
-package com.login.OAuth2.global;
+package com.login.OAuth2.global.s3.Controller;
 
-import com.login.OAuth2.global.s3.service.S3Uploader;
+import com.login.OAuth2.global.s3.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,13 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class FileUploadController {
 
-    private final S3Uploader s3Uploader;
+    private final S3Service s3Service;
 
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("imageFile") MultipartFile file){
 
         try{
-            String imageUrl = s3Uploader.upload(file);
+            String imageUrl = s3Service.upload(file);
 
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.add("image-url", imageUrl);
