@@ -25,6 +25,7 @@ public class S3Uploader {
 
         ObjectMetadata objMeta = new ObjectMetadata();
 
+        objMeta.setContentType(multipartFile.getContentType());
         objMeta.setContentLength(multipartFile.getInputStream().available());
 
         amazonS3.putObject(bucket, s3FileName, multipartFile.getInputStream(), objMeta);
