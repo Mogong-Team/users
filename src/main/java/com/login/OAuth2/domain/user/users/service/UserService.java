@@ -4,6 +4,7 @@ import com.login.OAuth2.domain.user.users.Role;
 import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.domain.user.users.dto.UserSignUpDto;
 import com.login.OAuth2.domain.user.users.repository.UserRepository;
+import com.login.OAuth2.domain.user.util.ProfileImageUtil;
 import com.login.OAuth2.global.s3.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +71,13 @@ public class UserService {
 
     @Transactional
     public void changeImageUrl(User user, String imageUrl){
+
+        String oldImageUrl = user.getImageUrl();
+
+        if(!ProfileImageUtil.PROFILE_IMAGE_URLS.contains(oldImageUrl)){
+            s3Service.delete(oldImageUrl);
+        }
+
         user.updateImageUrl(imageUrl);
         userRepository.save(user);
     }

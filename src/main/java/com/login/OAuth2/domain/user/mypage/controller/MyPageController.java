@@ -2,6 +2,7 @@ package com.login.OAuth2.domain.user.mypage.controller;
 
 import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.domain.user.users.service.UserService;
+import com.login.OAuth2.domain.user.util.ProfileImageUtil;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,30 @@ public class MyPageController {
             }
 
             userService.changeImageUrl(user, imageUrl);
+
             return ResponseEntity.status(HttpStatus.OK).body("Update user's profile");
+        } else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    @PostMapping("/change-profile/basic")
+    public ResponseEntity<String> changeProfileBasic(HttpServletRequest request){
+
+        Optional<String> accessToken = jwtService.extractAccessToken(request);
+        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
+
+        if(userId.isPresent()){
+            User user = userService.findUser(userId.get());
+
+            if(user == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            String randomImageUrl = ProfileImageUtil.getRandomImageUrl();
+            userService.changeImageUrl(user, randomImageUrl);
+            
+            return ResponseEntity.status(HttpStatus.OK).build();
         } else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
