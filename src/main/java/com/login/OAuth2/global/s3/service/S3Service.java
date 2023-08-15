@@ -1,35 +1,50 @@
 package com.login.OAuth2.global.s3.service;
 
-import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.io.InputStream;
+import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class S3Service {
 
-    private static final String bucket = "mogong-s3-bucket";
+    private static String bucket = "mogong-s3-bucket";
 
-    private final AmazonS3 amazonS3;
+    private final AmazonS3Client amazonS3Client;
 
-    @Transactional
-    public String upload(MultipartFile multipartFile) throws IOException{
+    /**
+     * S3 파일 업로드
+     * */
+    public String upload(MultipartFile multipartFile) throws IOException {
 
-        String s3FileName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
+        String fileName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
 
-        ObjectMetadata objMeta = new ObjectMetadata();
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(multipartFile.getContentType());
+        objectMetadata.setContentLength(multipartFile.getSize());
 
-        objMeta.setContentType(multipartFile.getContentType());
-        objMeta.setContentLength(multipartFile.getInputStream().available());
+        amazonS3Client.putObject(bucket, fileName, multipartFile.getInputStream(), objectMetadata);
 
-        amazonS3.putObject(bucket, s3FileName, multipartFile.getInputStream(), objMeta);
+        return amazonS3Client.getUrl(bucket, fileName).toString();
+    }
 
-        return amazonS3.getUrl(bucket, s3FileName).toString();
+    public void delete(String imageUrl){
+
+        if(amazonS3Client.doesObjectExist(bucket, imageUrl))
+        amazonS3Client.deleteObject(bucket, imageUrl);
     }
 }
+
+

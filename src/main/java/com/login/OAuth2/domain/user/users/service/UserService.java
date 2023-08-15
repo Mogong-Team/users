@@ -4,10 +4,12 @@ import com.login.OAuth2.domain.user.users.Role;
 import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.domain.user.users.dto.UserSignUpDto;
 import com.login.OAuth2.domain.user.users.repository.UserRepository;
+import com.login.OAuth2.global.s3.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
@@ -18,9 +20,11 @@ import javax.transaction.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final S3Service s3Service;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public void signUp(UserSignUpDto userSignUpDto) throws Exception {
 
         if (userRepository.findByEmail(userSignUpDto.getEmail()).isPresent()) {
@@ -49,6 +53,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + id + "Not Found"));
     }
 
+    @Transactional
     public void changeNickname(User user, String nickname){
         log.info(">> UserService.updateNickname() 호출 - 닉네임 수정");
         user.updateNickname(nickname);
@@ -63,6 +68,7 @@ public class UserService {
         return userRepository.findByNickname(nickname).isPresent();
     }
 
+    @Transactional
     public void changeImageUrl(User user, String imageUrl){
         user.updateImageUrl(imageUrl);
         userRepository.save(user);
