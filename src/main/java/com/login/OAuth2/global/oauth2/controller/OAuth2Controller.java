@@ -59,14 +59,4 @@ public class OAuth2Controller {
          * */
         return ResponseEntity.status(HttpStatus.OK).build();
     }
-
-    @PostMapping("/duplicate-check")
-    public ResponseEntity<String> duplicateCheck(@RequestParam("nickname") String nickname){
-
-        if(userService.isNicknameExists(nickname)){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists.");
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
 }
