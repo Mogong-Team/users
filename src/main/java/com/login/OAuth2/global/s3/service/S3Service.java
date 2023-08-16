@@ -2,7 +2,6 @@ package com.login.OAuth2.global.s3.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.login.OAuth2.domain.user.util.ProfileImageUtil;
@@ -27,7 +26,8 @@ public class S3Service {
 
     public String upload(MultipartFile multipartFile) throws IOException {
 
-        String fileName = generateUniqueFileName(multipartFile.getOriginalFilename());
+        String fileName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
+        log.info(">> >> s3.upload() : fileName = {}", fileName);
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
@@ -35,7 +35,9 @@ public class S3Service {
 
         try(InputStream inputStream = multipartFile.getInputStream()){
             amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
+                    );
+        } catch (Exception e){
+            log.info(e.getMessage());
         }
 
         return amazonS3Client.getUrl(bucket, fileName).toString();
