@@ -6,15 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/file")
+@RequestMapping("/s3")
 @RequiredArgsConstructor
 public class S3Controller {
 
@@ -25,7 +25,7 @@ public class S3Controller {
 
         try{
             String imageUrl = s3Service.upload(file);
-            log.info("imageUrl : " + imageUrl);
+            log.info("S3Controller.uploadFile() : imageUrl = {}", imageUrl);
 
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.add("image-url", imageUrl);
@@ -35,6 +35,19 @@ public class S3Controller {
                     .build();
         } catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<String> deleteFile(HttpServletRequest request){
+
+        String imageUrl = request.getHeader("image-url");
+
+        if(imageUrl != null && !imageUrl.isEmpty()){
+            s3Service.delete(imageUrl);
+            return ResponseEntity.status(HttpStatus.OK).body("Image delete successfully");
+        } else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image URL is missing");
         }
     }
 }
