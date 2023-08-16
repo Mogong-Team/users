@@ -87,4 +87,14 @@ public class MyPageController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
+
+    @PostMapping("/duplicate-check/nickname")
+    public ResponseEntity<String> duplicateCheck(@RequestParam("nickname") String nickname){
+
+        if(userService.isNicknameExists(nickname)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists.");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
