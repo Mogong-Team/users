@@ -39,6 +39,5 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
         response.setStatus(HttpServletResponse.SC_OK);
-        log.info(">> >> /login 페이지로 이동한다");
     }
 }
