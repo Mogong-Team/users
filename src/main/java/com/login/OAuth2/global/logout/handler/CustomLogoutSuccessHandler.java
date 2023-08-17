@@ -29,16 +29,16 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
         try{
             Optional<String> accessToken = jwtService.extractAccessToken(request);
             if(accessToken.isPresent()){
-                String token = accessToken.get();
-                tokenBlackListService.blackListToken(token);
+                String token = jwtService.expireAccessToken(accessToken.get());
+                jwtService.sendAccessToken(response, token);
             }else{
                 log.error(">> >> request에 액토가 없다");
             }
         } catch (Exception e){
             e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
         response.setStatus(HttpServletResponse.SC_OK);
         log.info(">> >> /login 페이지로 이동한다");
-        response.sendRedirect("/login");
     }
 }
