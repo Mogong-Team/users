@@ -84,7 +84,7 @@ public class JwtService {
      */
     public void sendAccessToken(HttpServletResponse response, String accessToken) {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(accessHeader, accessToken);
+        response.setHeader(accessHeader, BEARER + accessToken);
         log.info("재발급된 Access Token : {}", accessToken);
     }
 
@@ -155,7 +155,7 @@ public class JwtService {
      */
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
         log.info(">> JwtService.setAccessTokenHeader() 실행 - jwt 응답 헤더에 액토 설정");
-        response.setHeader(accessHeader, accessToken);
+        response.setHeader(accessHeader, BEARER + accessToken);
     }
 
     /**
@@ -163,7 +163,7 @@ public class JwtService {
      */
     public void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
         log.info(">> JwtService.setRefreshTokenHeader() 실행 - jwt 응답 헤더에 리토 설정");
-        response.setHeader(refreshHeader, refreshToken);
+        response.setHeader(refreshHeader, BEARER + refreshToken);
     }
 //
     /**

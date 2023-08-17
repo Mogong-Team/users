@@ -22,8 +22,9 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-//    private final UserService userService;
     private final UserRepository userRepository;
+
+    private static final String BEARER = "Bearer ";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -36,8 +37,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             if(oAuth2User.getRole() == Role.GUEST) {
                 String accessToken = jwtService.createAccessToken(oAuth2User.getId());
                 String refreshToken = jwtService.createRefreshToken();
-                response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
-                response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
+                response.addHeader(jwtService.getAccessHeader(), BEARER + accessToken);
+                response.addHeader(jwtService.getRefreshHeader(), BEARER + refreshToken);
 
                 User findUser = userRepository.findById(oAuth2User.getId())
                         .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없습니다."));
@@ -58,8 +59,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         log.info(">> SuccessHandler.loginSuccess() 호출");
         String accessToken = jwtService.createAccessToken(oAuth2User.getId());
         String refreshToken = jwtService.createRefreshToken();
-        response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
-        response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
+        response.addHeader(jwtService.getAccessHeader(), BEARER + accessToken);
+        response.addHeader(jwtService.getRefreshHeader(), BEARER + refreshToken);
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
         jwtService.updateRefreshToken(oAuth2User.getId(), refreshToken);
