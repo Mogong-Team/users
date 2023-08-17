@@ -163,14 +163,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     public void saveAuthentication(User myUser) {
         log.info(">> JwtAuthenticationProcessingFilter.saveAuthentication() 호출");
         log.info(">> >> myUser : {}", myUser);
-        String password = myUser.getPassword(); //파라미터로 들어온 유저의 password
-        if (password == null) { // 소셜 로그인 유저의 비밀번호 임의로 설정 하여 소셜 로그인 유저도 인증 되도록 설정
-            password = PasswordUtil.generateRandomPassword();   //소셜 로그인으로 하여 password가 없으면 임의로 생성 시켜놓는다
-        }
 
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()  //사용자 인증 정보 생성
                 .username(myUser.getEmail())    //유저이름은 사용자 이메일
-                .password(password) //password는 위에서 설정한 password
+                .password("")
                 .roles(myUser.getRole().name()) //role은
                 .build();
 
