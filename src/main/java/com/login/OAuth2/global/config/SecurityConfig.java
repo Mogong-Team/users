@@ -75,7 +75,6 @@ public class SecurityConfig {
                 .and()
                 .logout()
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
                 .deleteCookies("JSESSIONID", "remember-me")
                 .logoutSuccessHandler(customLogoutSuccessHandler)
 
