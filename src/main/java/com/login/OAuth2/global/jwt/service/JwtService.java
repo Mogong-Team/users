@@ -49,7 +49,6 @@ public class JwtService {
     private static final String BEARER = "Bearer ";
 
     private final UserRepository userRepository;
-    private final TokenBlackListService tokenBlackListService;
 
     /**
      * AccessToken 생성 메소드
@@ -181,11 +180,6 @@ public class JwtService {
 
     public boolean isTokenValid(String token) {
         log.info(">> JwtService.isTokenValid() 실행 - jwt 토큰 검사");
-
-        if(tokenBlackListService.isTokenBlacklisted(token)){
-            log.error(">> >> 토큰 블랙리스트에 들어있음");
-            return false;
-        }
 
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);

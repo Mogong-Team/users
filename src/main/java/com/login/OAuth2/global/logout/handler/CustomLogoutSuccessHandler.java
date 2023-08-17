@@ -1,7 +1,6 @@
 package com.login.OAuth2.global.logout.handler;
 
 import com.login.OAuth2.global.jwt.service.JwtService;
-import com.login.OAuth2.global.jwt.service.TokenBlackListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -20,7 +19,6 @@ import java.util.Optional;
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
     private final JwtService jwtService;
-    private final TokenBlackListService tokenBlackListService;
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
