@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -71,10 +72,10 @@ public class UserService {
     @Transactional
     public void changeImageUrl(User user, String imageUrl){
 
-        String oldImageUrl = user.getImageUrl();
+        Optional<String> oldImageUrl = Optional.ofNullable(user.getImageUrl());
 
-        if(!ProfileImageUtil.PROFILE_IMAGE_URLS.contains(oldImageUrl)){
-            s3Service.delete(oldImageUrl);
+        if(!ProfileImageUtil.PROFILE_IMAGE_URLS.contains(oldImageUrl) && oldImageUrl.isPresent()){
+            s3Service.delete(oldImageUrl.get());
         }
 
         user.updateImageUrl(imageUrl);
