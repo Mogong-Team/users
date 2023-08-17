@@ -7,6 +7,8 @@ import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.global.oauth2.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -45,7 +47,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
                 jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
                 jwtService.updateRefreshToken(oAuth2User.getId(), refreshToken);
-                response.sendRedirect("/oauth2/sign-up"); // 프론트의 회원가입 추가 정보 입력 폼으로 리다이렉트
+//                response.sendRedirect("/oauth2/sign-up"); // 프론트의 회원가입 추가 정보 입력 폼으로 리다이렉트
+                response.setStatus(HttpServletResponse.SC_CREATED);
+
             } else {
                 loginSuccess(response, oAuth2User); // 로그인에 성공한 경우 access, refresh 토큰 생성
             }
@@ -64,6 +68,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
         jwtService.updateRefreshToken(oAuth2User.getId(), refreshToken);
-        response.sendRedirect("/");
+
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 }
