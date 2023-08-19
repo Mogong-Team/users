@@ -1,5 +1,6 @@
 package com.login.OAuth2.domain.user.mypage.controller;
 
+import com.login.OAuth2.domain.user.users.SocialType;
 import com.login.OAuth2.domain.user.users.User;
 import com.login.OAuth2.domain.user.users.service.UserService;
 import com.login.OAuth2.domain.user.util.ProfileImageUtil;
@@ -11,7 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -93,5 +95,29 @@ public class MyPageController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<Map<String, String>> userInfo(HttpServletRequest request){
+
+        Long userId = jwtService.getUserId(request);
+
+        if(userId != null){
+            User user = userService.findUser(userId);
+
+            if(user == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            Map<String, String> userInfo = new HashMap<>();
+
+            userInfo.put("nickname", user.getNickname());
+            userInfo.put("imageUrl", user.getImageUrl());
+            userInfo.put("SocialType", String.valueOf(user.getSocialType()));
+
+            return ResponseEntity.status(HttpStatus.OK).body(userInfo);
+        } else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
