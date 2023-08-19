@@ -211,4 +211,11 @@ public class JwtService {
             return null;
         }
     }
+
+    public Long getUserId(HttpServletRequest request){
+
+        Optional<String> token = extractAccessToken(request);
+        Optional<Long> userId = extractUserId(token.get());
+        return userId.get();
+    }
 }

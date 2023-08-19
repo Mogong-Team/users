@@ -26,11 +26,10 @@ public class MyPageController {
     public ResponseEntity<String> changeNickname(HttpServletRequest request, @RequestParam("nickname") String newNickname){
         log.info(">> MyPageController.changeNickname() 호출");
 
-        Optional<String> accessToken = jwtService.extractAccessToken(request);
-        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
+        Long userId = jwtService.getUserId(request);
 
-        if(userId.isPresent()) {
-            User user = userService.findUser(userId.get());
+        if(userId != null) {
+            User user = userService.findUser(userId);
 
             if (user != null) {
                 if (userService.isNicknameExists(newNickname)) {
@@ -48,11 +47,10 @@ public class MyPageController {
     @PostMapping("/change-profile")
     public ResponseEntity<String> changeProfile(HttpServletRequest request, @RequestParam("imageUrl") String imageUrl){
 
-        Optional<String> accessToken = jwtService.extractAccessToken(request);
-        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
+        Long userId = jwtService.getUserId(request);
 
-        if(userId.isPresent()){
-            User user = userService.findUser(userId.get());
+        if(userId != null){
+            User user = userService.findUser(userId);
 
             if(user == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
@@ -69,11 +67,10 @@ public class MyPageController {
     @PostMapping("/change-profile/basic")
     public ResponseEntity<String> changeProfileBasic(HttpServletRequest request){
 
-        Optional<String> accessToken = jwtService.extractAccessToken(request);
-        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
+        Long userId = jwtService.getUserId(request);
 
-        if(userId.isPresent()){
-            User user = userService.findUser(userId.get());
+        if(userId != null){
+            User user = userService.findUser(userId);
 
             if(user == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");

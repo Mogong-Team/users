@@ -33,17 +33,15 @@ public class OAuth2Controller {
     public ResponseEntity<String> createUser(HttpServletRequest request, @RequestParam("nickname") String nickname){
         log.info(">> OAuth2Controller.createUser() 실행");
 
-        Optional<String> accessToken = jwtService.extractAccessToken(request);
-        Optional<Long> userId = jwtService.extractUserId(accessToken.get());
+        Long userId = jwtService.getUserId(request);
 
-
-        if(userId.isPresent()){
+        if(userId != null){
             if(userService.isNicknameExists(nickname)){
                 log.error(">> >> >> Error: Nickname already exists.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nickname already exists. Please choose a different nickname.");
             }
 
-            User user = userService.findUser(userId.get());
+            User user = userService.findUser(userId);
             String randomImageUrl = ProfileImageUtil.getRandomImageUrl();
 
             userService.changeNickname(user, nickname);
