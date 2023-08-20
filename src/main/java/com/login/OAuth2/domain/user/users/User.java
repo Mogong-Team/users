@@ -1,9 +1,12 @@
 package com.login.OAuth2.domain.user.users;
 
+import com.login.OAuth2.domain.user.badge.Badge;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,6 +38,11 @@ public class User {
     private String socialId; // 로그인한 소셜 타입의 식별자 값 (일반 로그인인 경우 null)
 
     private String refreshToken; // 리프레시 토큰
+
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(name = "user_badge", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "badge_id"))
+    private Set<Badge> badges = new HashSet<>();
 
     // 유저 권한 설정 메소드
     public void authorizeUser() {
