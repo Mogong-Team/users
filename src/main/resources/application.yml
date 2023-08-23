@@ -22,9 +22,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/mogongdb?serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: aaaa
+    url: jdbc:mysql://52.79.63.31:3306/mogongdb?serverTimezone=UTC&characterEncoding=UTF-8
+    username: abcgnd
+    password: G8G8g8g8gnd123!
 
   jpa:
     show-sql: true
