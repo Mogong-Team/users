@@ -1,4 +1,9 @@
 spring:
+  output:
+    ansi:
+      enabled: always
+---
+spring:
   profiles:
     group:
       "local" : "local, jwt, oauth, aws"
@@ -17,9 +22,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://52.79.63.31:3306/mogongdb?serverTimezone=UTC&characterEncoding=UTF-8
-    username: abcgnd
-    password: G8G8g8g8gnd123!
+    url: jdbc:mysql://localhost:3306/mogongdb?serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: aaaa
 
   jpa:
     show-sql: true
