@@ -22,7 +22,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://52.79.63.31:3306/mogongdb?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://43.202.16.62:3306/mogongdb?serverTimezone=UTC&characterEncoding=UTF-8
     username: abcgnd
     password: G8G8g8g8gnd123!
 
