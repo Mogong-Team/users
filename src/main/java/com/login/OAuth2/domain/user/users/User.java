@@ -1,11 +1,14 @@
 package com.login.OAuth2.domain.user.users;
 
 import com.login.OAuth2.domain.user.badge.Badge;
+import com.login.OAuth2.study.Study;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -43,6 +46,13 @@ public class User {
     @ManyToMany
     @JoinTable(name = "user_badge", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "badge_id"))
     private Set<Badge> badges = new HashSet<>();
+
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(name = "my_study", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "study_id"))
+    private Set<Study> myStudies = new HashSet<>();
+
+
 
     // 유저 권한 설정 메소드
     public void authorizeUser() {
