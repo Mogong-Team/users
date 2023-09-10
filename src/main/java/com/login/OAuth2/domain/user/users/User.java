@@ -6,9 +6,7 @@ import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -51,6 +49,11 @@ public class User {
     @ManyToMany
     @JoinTable(name = "my_study", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "study_id"))
     private Set<Study> myStudies = new HashSet<>();
+
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(name = "scrap_study", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "study_id"))
+    private Set<Study> scrapStudies = new HashSet<>();
 
 
 

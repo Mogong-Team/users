@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -49,6 +47,9 @@ public class Study {
     private LocalDateTime deadline;
 
     @ManyToMany(mappedBy = "myStudies")
-    private Set<User> users = new HashSet<>();
+    private Set<User> myUsers = new HashSet<>();
+
+    @ManyToMany(mappedBy = "scrapStudies")
+    private Set<User> scrapUsers = new HashSet<>();
 
 }
