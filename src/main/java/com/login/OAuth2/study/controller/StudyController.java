@@ -6,6 +6,7 @@ import com.login.OAuth2.domain.user.users.service.UserService;
 import com.login.OAuth2.global.jwt.service.JwtService;
 import com.login.OAuth2.study.Study;
 import com.login.OAuth2.study.dto.StudyDto;
+import com.login.OAuth2.study.dto.StudyResponseDto;
 import com.login.OAuth2.study.service.StudyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,12 @@ public class StudyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studyDto);
     }
 
-//    @GetMapping("/{studyId}")
-//    public ResponseEntity<?> readStudy(HttpServletRequest request, @)
+    @GetMapping("/{studyId}")
+    public ResponseEntity<StudyResponseDto> readStudy(HttpServletRequest request, @PathVariable Long studyId){
+
+        Study study = studyService.findStudy(studyId);
+        StudyResponseDto studyResponseDto = studyService.toResponseDto(study);
+
+        return ResponseEntity.status(HttpStatus.OK).body(studyResponseDto);
+    }
 }
