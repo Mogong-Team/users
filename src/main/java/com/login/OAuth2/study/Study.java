@@ -2,6 +2,7 @@ package com.login.OAuth2.study;
 
 import com.login.OAuth2.domain.user.users.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "study")
@@ -46,10 +48,11 @@ public class Study {
     private LocalDateTime createDate;
     private LocalDateTime deadline;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "myStudies")
     private Set<User> myUsers = new HashSet<>();
 
+    @Builder.Default
     @ManyToMany(mappedBy = "scrapStudies")
     private Set<User> scrapUsers = new HashSet<>();
-
 }
